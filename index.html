@@ -15,7 +15,7 @@
 <section><h2>③ 전체 장비 목표 (옵션별 최소 개수)</h2><div id="targets" class="grid"></div><p class="muted">각 장비에서 같은 옵션의 중복은 불가능하다고 가정. 각 목표 옵션의 최소 수치 등급을 드롭다운에서 선택할 수 있습니다.</p></section>
 <section><h2>④ 게임 규칙 · 수정 가능한 설정</h2><div class="row"><label>1슬롯 출현률 <input id="p1" type="number" min="0" max="100" value="100">%</label><label>2슬롯 <input id="p2" type="number" min="0" max="100" value="50">%</label><label>3슬롯 <input id="p3" type="number" min="0" max="100" value="30">%</label></div><div class="row"><label>잠금 0개 변경 모듈 <input id="c0" type="number" min="0" value="1"></label><label>잠금 1개 변경 모듈 <input id="c1" type="number" min="0" value="1"></label><label>잠금 2개 변경 모듈 <input id="c2" type="number" min="0" value="3"></label></div><div class="row"><label>모듈 첫 고정 잠금 <input id="m1" type="number" min="0" value="2"></label><label>모듈 두번째 추가 <input id="m2" type="number" min="0" value="3"></label><label>락 키 첫 잠금 <input id="k1" type="number" min="0" value="20"></label><label>락 키 두번째 추가 <input id="k2" type="number" min="0" value="30"></label></div><div class="note">⚠️ 미검증 모델 가정: 슬롯별 등장 여부를 독립 추첨하고, 옵션 종류는 이미 선택된 종류를 제외한 나머지 확률을 비례 재정규화해 추첨합니다. 고정 잠금은 계속 유지, 락 키 잠금은 1회 변경 후 해제된다고 처리합니다. 잠금 상태의 슬롯 출현·확률 재분배 및 수치 재설정은 아직 분석에서 제외합니다. 실제 게임과 차이가 날 수 있습니다.</div><details><summary>옵션별 종류 가중치 (합계 100)</summary><div id="weights" class="grid"></div></details></section>
 <section><h2>⑤ 전략별 시뮬레이션</h2><div class="actions"><button id="calculate">계산 실행</button><button class="secondary" id="save">설정 저장</button><button class="secondary" id="load">저장 불러오기</button><button class="secondary" id="reset">초기화</button></div><p class="muted">전략: 잠금 없음 / 목표 옵션을 락 키로 보호 / 모듈 고정 보호 / 혼합 보호. 한 장비에서 목표에 기여하는 옵션을 최대 2개 보호하고 나머지를 재설정하는 휴리스틱입니다. 전역 MDP 최적해가 아닙니다.</p><div id="result"><p class="muted">계산 실행을 눌러주세요.</p></div></section><section><h2>검증 상태</h2><p class="muted">확인: 옵션 종류별 기본 확률(사용자 제공 화면), 슬롯별 확률, 잠금 비용, 효과 변경 비용, 락 키 자동 해제. 미확인: 잠금 상태의 옵션 추첨 상세, 옵션 수치 재설정의 분포, 신규 캐릭터 추천 옵션. 이 버전은 재화 비용 비교를 위한 시뮬레이션 프로토타입입니다.</p></section>
-<section id="singleMode"><h2>⑥ 장비 1개 잠금 전략 비교 · 베타 0.4</h2><p class="muted">②의 <b>머리 장비 3개 옵션</b>을 현재 상태로 사용합니다. 아래에서 목표 옵션과 최소 등급을 선택하세요. 다른 장비의 옵션과 ③ 전체 목표는 이 계산에 반영하지 않습니다.</p>
+<section id="singleMode"><h2>⑥ 장비 1개 잠금 전략 비교 · 베타 0.4.4</h2><p class="muted">②의 <b>머리 장비 3개 옵션</b>을 현재 상태로 사용합니다. 아래에서 목표 옵션과 최소 등급을 선택하세요. 다른 장비의 옵션과 ③ 전체 목표는 이 계산에 반영하지 않습니다.</p>
 <div class="row"><label>비교할 장비 <select id="singlePart"><option value="0">머리</option><option value="1">몸통</option><option value="2">팔</option><option value="3">다리</option></select></label><label>평가 기준 <select id="valuation"><option value="auto">보유량 비율 자동 평가</option><option value="manual">직접 가치 설정</option></select></label><label>모듈 1개 = 락 키 <input id="keyRatio" type="number" min="0.1" step="1" value="20">개</label></div>
 <div class="grid" id="singleGoals"></div><p class="muted">자동 평가는 예상 모듈 사용량/보유 모듈 + 예상 락 키 사용량/보유 락 키를 합산합니다. 공식 교환비가 아니며, 보유량이 0인 재화는 사용할 수 없는 전략으로 처리합니다.</p>
 <button id="singleCalculate">장비 1개 전략 비교 실행</button><div id="singleResult" style="margin-top:12px"><p class="muted">현재 옵션과 목표를 설정한 뒤 계산해 주세요.</p></div>
@@ -67,7 +67,7 @@ function simulate(input,kind,seed){const r=rng(seed),e=input.equipment.map(x=>x.
  }
  return {success:false,modules,keys,steps};
 }
-function summarize(input,kind){const n=input.runs;const samples=[];for(let i=0;i<n;i++)samples.push(simulate(input,kind,input.seed+i*9973+kind.length*71));const success=samples.filter(x=>x.success);const avg=k=>success.length?success.reduce((a,x)=>a+x[k],0)/success.length:null;const pct=success.length/n;const err=1.96*Math.sqrt(pct*(1-pct)/n);const sorted=success.map(x=>x.modules).sort((a,b)=>a-b);const quant=p=>sorted.length?sorted[Math.min(sorted.length-1,Math.ceil(p*sorted.length)-1)]:null;return {kind,success:success.length,total:n,p:pct,error:err,avgModules:avg('modules'),avgKeys:avg('keys'),medianModules:quant(.5),p90Modules:quant(.9)}}
+function summarize(input,kind){const n=input.runs;const samples=[];for(let i=0;i<n;i++)samples.push(simulate(input,kind,input.seed+i*9973+kind.length*71));const success=samples.filter(x=>x.success);const avg=k=>success.length?success.reduce((a,x)=>a+x[k],0)/success.length:null;const pct=success.length/n;const err=1.96*Math.sqrt(pct*(1-pct)/n);const sorted=success.map(x=>x.modules).sort((a,b)=>a-b);const quant=p=>sorted.length?sorted[Math.min(sorted.length-1,Math.ceil(p*sorted.length)-1)]:null;return {kind,success:success.length,total:n,p:pct,error:err,avgModules:avg('modules'),avgKeys:avg('keys'),minModules:success.length?Math.min(...success.map(x=>x.modules)):null,maxModules:success.length?Math.max(...success.map(x=>x.modules)):null,minKeys:success.length?Math.min(...success.map(x=>x.keys)):null,maxKeys:success.length?Math.max(...success.map(x=>x.keys)):null,medianModules:quant(.5),p90Modules:quant(.9)}}
 return {names,weights,rng,pick,goalMet,goalMetQualified,costFor,simulate,summarize};
 })();
 
@@ -96,7 +96,7 @@ $('weights').innerHTML=E.names.map((n,i)=>`<label>${n} <input id="w${i}" type="n
 function number(id){return Number($(id).value)}function read(){return {grades:parts.map((_,j)=>[0,1,2].map(k=>{const el=$(`v${j}_${k}`);return el.value?el.selectedIndex:0})),locks:parts.map((_,j)=>[0,1,2].map(k=>$(`l${j}_${k}`).value)),minGrades:E.names.map((_,i)=>number(`g${i}`)),equipment:parts.map((_,j)=>[0,1,2].map(k=>number(`o${j}_${k}`))),targets:E.names.map((_,i)=>number(`t${i}`)),weights:E.names.map((_,i)=>number(`w${i}`)),slotProb:[number('p1'),number('p2'),number('p3')].map(x=>x/100),costs:{c0:number('c0'),c1:number('c1'),c2:number('c2'),m1:number('m1'),m2:number('m2'),k1:number('k1'),k2:number('k2')},budget:{modules:number('modules'),keys:number('keys')},runs:number('runs'),seed:number('seed')}}
 function validate(x){if(x.minGrades.some(v=>v<1||v>15))return '목표 등급은 1~15 사이여야 합니다.';if(x.targets.every(v=>v===0))return '목표 옵션 개수를 하나 이상 입력해 주세요.';if(x.targets.some(v=>v<0||v>4||!Number.isInteger(v)))return '옵션별 목표 개수는 0~4 정수로 입력해 주세요.';if(x.targets.reduce((a,b)=>a+b,0)>12)return '목표 옵션 총합은 12개를 넘을 수 없습니다.';if(x.weights.some(v=>v<0)||x.weights.reduce((a,b)=>a+b,0)<=0)return '옵션 확률 가중치를 확인해 주세요.';if(x.slotProb.some(v=>v<0||v>1))return '슬롯 확률은 0~100%여야 합니다.';if(Object.values(x.costs).some(v=>v<0)||Object.values(x.budget).some(v=>v<0))return '재화는 0 이상이어야 합니다.';for(const eq of x.equipment){const existing=eq.filter(v=>v>=0);if(new Set(existing).size!==existing.length)return '한 장비 안에서 동일 옵션을 중복 입력할 수 없습니다.'}return ''}
 const fmt=v=>v===null?'—':v.toFixed(1),pct=v=>(v*100).toFixed(1)+'%';
-$('calculate').onclick=()=>{const x=read(),error=validate(x);if(error){$('result').innerHTML=`<p class="warning">${error}</p>`;return}const started=performance.now();const kinds=['none','keys','fixed','mixed'];const label={none:'잠금 없음',keys:'락 키 보호',fixed:'모듈 고정 보호',mixed:'모듈+락 키 혼합'};const results=kinds.map(k=>E.summarize(x,k));results.sort((a,b)=>b.p-a.p||((a.avgModules??1e9)-(b.avgModules??1e9)));const met=E.goalMetQualified(x.equipment,x.grades,x.targets,x.minGrades);$('result').innerHTML=`<div class="row"><div class="card"><div class="muted">현재 목표 달성</div><div class="stat">${met?'달성':'미달성'}</div></div><div class="card"><div class="muted">실험 규모</div><div class="stat">${x.runs.toLocaleString()}회 × 4</div></div></div><div class="tablewrap"><table><thead><tr><th>전략</th><th>예산 내 성공률</th><th>95% 오차폭*</th><th>성공 사례 평균 모듈</th><th>성공 사례 평균 락 키</th><th>성공 사례 모듈 중앙값</th></tr></thead><tbody>${results.map(z=>`<tr><td>${label[z.kind]}</td><td><strong class="good">${pct(z.p)}</strong></td><td>±${pct(z.error)}</td><td>${fmt(z.avgModules)}</td><td>${fmt(z.avgKeys)}</td><td>${z.medianModules??'—'}</td></tr>`).join('')}</tbody></table></div><p class="note">현재 수치 등급과 목표 최소 등급을 반영합니다. 단, 실제 게임의 잠금 상태 전이 및 확률 재분배는 미검증이며, 최적해가 아닌 비교용 휴리스틱입니다.<br>*오차폭은 독립 시행을 가정한 근사치이며 시뮬레이션 모델 자체의 오류를 포함하지 않습니다. 평균 비용은 <b>성공한 실험만의 평균</b>으로, 목표 달성까지의 무제한 기대비용이 아닙니다. 전략별 순위는 보유 예산 내 성공률 기준의 참고 비교일 뿐 최적성 보장은 없습니다. ${Math.round(performance.now()-started)}ms</p>`};
+$('calculate').onclick=()=>{const x=read(),error=validate(x);if(error){$('result').innerHTML=`<p class="warning">${error}</p>`;return}const started=performance.now();const kinds=['none','keys','fixed','mixed'];const label={none:'잠금 없음',keys:'락 키 보호',fixed:'모듈 고정 보호',mixed:'모듈+락 키 혼합'};const results=kinds.map(k=>E.summarize(x,k));results.sort((a,b)=>b.p-a.p||((a.avgModules??1e9)-(b.avgModules??1e9)));const met=E.goalMetQualified(x.equipment,x.grades,x.targets,x.minGrades);$('result').innerHTML=`<div class="row"><div class="card"><div class="muted">현재 목표 달성</div><div class="stat">${met?'달성':'미달성'}</div></div><div class="card"><div class="muted">실험 규모</div><div class="stat">${x.runs.toLocaleString()}회 × 4</div></div></div><div class="tablewrap"><table><thead><tr><th>전략</th><th>예산 내 성공률</th><th>95% 오차폭*</th><th>성공 모듈 최소</th><th>성공 모듈 평균</th><th>성공 모듈 최대</th><th>성공 락 키 최소</th><th>성공 락 키 평균</th><th>성공 락 키 최대</th><th>성공 사례 모듈 중앙값</th></tr></thead><tbody>${results.map(z=>`<tr><td>${label[z.kind]}</td><td><strong class="good">${pct(z.p)}</strong></td><td>±${pct(z.error)}</td><td>${z.minModules??'—'}</td><td>${fmt(z.avgModules)}</td><td>${z.maxModules??'—'}</td><td>${z.minKeys??'—'}</td><td>${fmt(z.avgKeys)}</td><td>${z.maxKeys??'—'}</td><td>${z.medianModules??'—'}</td></tr>`).join('')}</tbody></table></div><p class="note">현재 수치 등급과 목표 최소 등급을 반영합니다. 단, 실제 게임의 잠금 상태 전이 및 확률 재분배는 미검증이며, 최적해가 아닌 비교용 휴리스틱입니다.<br>*오차폭은 독립 시행을 가정한 근사치이며 시뮬레이션 모델 자체의 오류를 포함하지 않습니다. 평균 비용은 <b>성공한 실험만의 평균</b>으로, 목표 달성까지의 무제한 기대비용이 아닙니다. 전략별 순위는 보유 예산 내 성공률 기준의 참고 비교일 뿐 최적성 보장은 없습니다. ${Math.round(performance.now()-started)}ms</p>`};
 function snapshot(){const ids=['character','modules','keys','seed','runs','p1','p2','p3','c0','c1','c2','m1','m2','k1','k2',...E.names.flatMap((_,i)=>[`t${i}`,`g${i}`,`w${i}`]),...parts.flatMap((_,j)=>[0,1,2].flatMap(k=>[`o${j}_${k}`,`v${j}_${k}`,`l${j}_${k}`]))];return Object.fromEntries(ids.map(id=>[id,$(id).value]))}
 $('save').onclick=()=>{localStorage.setItem('nikke-overload-beta-v1',JSON.stringify(snapshot()));alert('이 브라우저에 저장했습니다.')};$('load').onclick=()=>{try{const data=JSON.parse(localStorage.getItem('nikke-overload-beta-v1')||'null');if(!data){alert('저장된 설정이 없습니다.');return}for(const [id,value] of Object.entries(data))if($(id)&&!/^v[0-3]_[0-2]$/.test(id))$(id).value=value;parts.forEach((_,j)=>[0,1,2].forEach(k=>updateGrade(j,k,data[`v${j}_${k}`]??'')));alert('불러왔습니다.')}catch(e){alert('저장 데이터를 읽지 못했습니다.')}};$('reset').onclick=()=>{if(confirm('입력값을 초기화할까요?'))location.reload()};
 })();
@@ -110,13 +110,21 @@ $('singleGoals').innerHTML=[0,1,2].map(i=>`<div class="card"><b>목표 ${i+1}</b
 function rng(seed){return E.rng(seed)}
 function rollGrade(r){let z=r();for(let g=1;g<=15;g++){z-=g<=5?.12:g<=10?.07:.01;if(z<0)return g}return 15}
 function sampleSlot(excluded,prob,weights,r){if(r()>=prob)return [-1,0];const opt=E.pick(excluded,weights,r);return opt<0?[-1,0]:[opt,rollGrade(r)]}
-function costPolicy(locked,mode,c){const n=locked.length;const modSetup=mode==='fixed'?(n>=1?c.m1:0)+(n>=2?c.m2:0):0;const keySetup=mode==='keys'?(n>=1?c.k1:0)+(n>=2?c.k2:0):0;return {modSetup,keySetup,change:[c.c0,c.c1,c.c2][n]}}
+function costPolicy(locked,mode,c){
+ const n=locked.length;
+ // 혼합 잠금은 슬롯 위치와 잠금 순서에 무관하게 같은 비용을 적용한다.
+ // 최초 변경: 모듈 고정 2 + 변경 3 = 5 모듈, 락 키 30개.
+ if(mode==='mixed_module_first'||mode==='mixed_key_first')return {modSetup:c.m1,keySetup:c.k2,change:c.c2,keyEachTurn:c.k2};
+ const modSetup=mode==='fixed'?(n>=1?c.m1:0)+(n>=2?c.m2:0):0;
+ const keySetup=mode==='keys'?(n>=1?c.k1:0)+(n>=2?c.k2:0):0;
+ return {modSetup,keySetup,change:[c.c0,c.c1,c.c2][n],keyEachTurn:mode==='keys'?keySetup:0};
+}
 function runOne(init,goal,lockIndices,mode,ctx,r){const options=init.map(x=>x[0]),grades=init.map(x=>x[1]);let m=0,k=0,steps=0,setupDone=false;
  const met=()=>goal.every(([o,g])=>options.some((v,i)=>v===o&&grades[i]>=g));
  if(met())return {ok:true,m,k,steps};
  const c=costPolicy(lockIndices,mode,ctx.costs);
  for(let turn=0;turn<ctx.maxSteps;turn++){
-  const dm=c.change+(!setupDone?c.modSetup:0),dk=mode==='keys'?c.keySetup:0;
+  const dm=c.change+(!setupDone?c.modSetup:0),dk=c.keyEachTurn;
   if(m+dm>ctx.modules||k+dk>ctx.keys)break;
   m+=dm;k+=dk;steps++;setupDone=true;
   // 잠금 없는 칸만 재추첨. 동일 장비 내 옵션 중복 금지.
@@ -151,21 +159,38 @@ $('singleCalculate').onclick=()=>{
   const locks=[0,1,2].filter(i=>mask&(1<<i));if(locks.length>2)continue;
   // 잠그는 슬롯은 목표를 이미 만족하는 옵션만 허용한다.
   if(locks.some(i=>!goal.some(([o,g])=>init[i][0]===o&&init[i][1]>=g)))continue;
-  for(const mode of (locks.length?['fixed','keys']:['none']))choices.push({locks,mode});
+  for(const mode of (locks.length===2?['fixed','keys','mixed_module_first','mixed_key_first']:locks.length===1?['fixed','keys']:['none']))choices.push({locks,mode});
  }
  const ctx={modules:mods,keys,probs,weights,costs,maxSteps:350};
- const result=choices.map((policy,idx)=>{
+ const result=choices.map(policy=>{
   const samples=Array.from({length:runs},(_,i)=>runOne(init,goal,policy.locks,policy.mode,ctx,rng(seed+i*9973)));
-  const success=samples.filter(x=>x.ok),p=success.length/runs,am=mean(success,x=>x.m),ak=mean(success,x=>x.k);
-  // 성공 사례 평균 비용은 실패 비용을 제외하므로 조건부 지표로만 제공.
-  const score=am==null?Infinity:manual?am+ak/ratio:(mods===0?(am>0?Infinity:0):am/mods)+(keys===0?(ak>0?Infinity:0):ak/keys);
-  return {...policy,p,am,ak,score,success:success.length};
+  const success=samples.filter(x=>x.ok),p=success.length/runs;
+  const am=mean(success,x=>x.m),ak=mean(success,x=>x.k);
+  const allM=mean(samples,x=>x.m),allK=mean(samples,x=>x.k);
+  const extrema=(arr,key)=>arr.length?{min:Math.min(...arr.map(x=>x[key])),max:Math.max(...arr.map(x=>x[key]))}:{min:null,max:null};
+  const successM=extrema(success,'m'),successK=extrema(success,'k');
+  const totalM=extrema(samples,'m'),totalK=extrema(samples,'k');
+  // 전체 시도 비용을 성공확률로 나눈 효율 지표: 실패 비용까지 반영.
+  // 독립적인 재시작이 가능하다고 가정할 때의 성공 1회당 비용 추정치.
+  const unitCost=(m,k)=>manual?m+k/ratio:(mods===0?(m>0?Infinity:0):m/mods)+(keys===0?(k>0?Infinity:0):k/keys);
+  const allCost=unitCost(allM,allK);
+  const score=p>0?allCost/p:Infinity;
+  const successCost=am==null?Infinity:unitCost(am,ak);
+  // 동일한 초기 상태에서 각 실험의 실제 소모 예산을 기준으로만 평가.
+  const n80=Math.ceil(runs*.8);
+  const sortedSuccess=success.map(x=>({m:x.m,k:x.k}));
+  // 현재 예산을 함께 배율 조정했을 때 필요한 최소 배율. 예산 0인 재화는 확장 불가.
+  const factors=sortedSuccess.map(x=>Math.max(mods===0?(x.m===0?0:Infinity):x.m/mods,keys===0?(x.k===0?0:Infinity):x.k/keys)).sort((a,b)=>a-b);
+  const budget80=factors.length>=n80?factors[n80-1]:null;
+  return {...policy,p,am,ak,allM,allK,successM,successK,totalM,totalK,allCost,score,successCost,budget80,success:success.length};
  });
- // 성공률을 최우선으로, 통계적으로 유사한 경우에만 종합 비용을 보조 기준으로 활용.
- result.sort((a,b)=>b.p-a.p||a.score-b.score);
- const label=z=>z.locks.length?`${z.locks.map(i=>`${i+1}번`).join('+')} ${z.mode==='fixed'?'모듈 고정':'락 키 1회 보호'}`:'잠금 없음';
- const best=result[0];
- out.innerHTML=`<div class="note"><b>추천 후보: ${label(best)}</b><br>예산 내 성공률 ${pct(best.p)} · 성공한 경우 평균 모듈 ${f(best.am)}개 / 락 키 ${f(best.ak)}개<br>정렬 기준: 성공률 우선 → 동일 성공률일 때 ${manual?'설정한 가치 비율':'보유량 대비 소모 비율'}로 비교. 아래의 모든 전략은 잠금 위치가 고정된 단순 전략이며 게임 최적해가 아닙니다.</div><div class="tablewrap"><table><thead><tr><th>잠금 전략</th><th>예산 내 성공률</th><th>성공 사례 평균 모듈</th><th>성공 사례 평균 락 키</th><th>종합 비용 지표*</th></tr></thead><tbody>${result.map(z=>`<tr><td>${label(z)}</td><td>${pct(z.p)}</td><td>${f(z.am)}</td><td>${f(z.ak)}</td><td>${Number.isFinite(z.score)?f(z.score):'—'}</td></tr>`).join('')}</tbody></table></div><p class="muted">* 비용 지표는 성공 사례만으로 계산하며 실패 시 소모 비용을 포함하지 않습니다. 같은 난수 시드를 사용한 ${runs}회 시뮬레이션/전략. 확률 재분배·잠금 시 슬롯 출현 방식은 검증되지 않은 모델 가정입니다. 락 키는 매 변경마다 재사용(비용 재지급), 모듈 고정은 최초 1회 비용으로 계산합니다. 이미 잠긴 장비와 중간에 잠금 전략을 변경하는 경우는 아직 지원하지 않습니다.</p>`;
+ // 사용자 선택 B: 성공률만이 아닌 실패 비용까지 포함한 성공 1회당 종합비용으로 추천.
+ // 0회 성공한 전략은 비용 지표가 정의되지 않으므로 추천에서 제외.
+ result.sort((a,b)=>a.score-b.score||b.p-a.p);
+ const label=z=>{if(!z.locks.length)return '잠금 없음';if(z.mode==='mixed_module_first')return `${z.locks[0]+1}번 모듈 고정 → ${z.locks[1]+1}번 락 키 보호`;if(z.mode==='mixed_key_first')return `${z.locks[0]+1}번 락 키 보호 → ${z.locks[1]+1}번 모듈 고정`;return `${z.locks.map(i=>`${i+1}번`).join('+')} ${z.mode==='fixed'?'모듈 고정':'락 키 1회 보호'}`;};
+ const best=result.find(z=>Number.isFinite(z.score));
+ const bestText=best?`<b>종합 효율 추천 후보: ${label(best)}</b><br>예산 내 성공률 ${pct(best.p)} · 성공 시 평균 모듈 ${f(best.am)}개 / 락 키 ${f(best.ak)}개<br>전체 시도 평균 모듈 ${f(best.allM)}개 / 락 키 ${f(best.allK)}개 · 성공 1회당 종합 비용 지표 ${f(best.score)}`:'<b>현재 예산에서 성공한 전략이 없습니다.</b> 예산이나 목표를 조정하거나 시뮬레이션 횟수를 늘려 주세요.';
+ out.innerHTML=`<div class="note">${bestText}<br>추천 기준: <b>전체 시도 평균 종합비용 ÷ 예산 내 성공률</b>. 실패한 시도의 재화 소모도 포함합니다. 단, 실패 후 초기 상태로 재시작할 수 있다는 가정의 비교 지표이며 실제 게임 최적해를 의미하지 않습니다. 혼합 잠금은 슬롯 위치와 잠금 순서에 관계없이 첫 변경 시 모듈 5개·락 키 30개(기본 설정)를 사용하며, 락 키 보호는 변경마다 재사용한다고 가정합니다.</div><div class="tablewrap"><table><thead><tr><th>잠금 전략</th><th>예산 내 성공률</th><th>성공 모듈 최소</th><th>성공 모듈 평균</th><th>성공 모듈 최대</th><th>성공 락 키 최소</th><th>성공 락 키 평균</th><th>성공 락 키 최대</th><th>전체 모듈 최소</th><th>전체 모듈 평균</th><th>전체 모듈 최대</th><th>전체 락 키 최소</th><th>전체 락 키 평균</th><th>전체 락 키 최대</th><th>성공 1회당 종합비용*</th><th>현재 예산으로 80% 달성</th></tr></thead><tbody>${result.map(z=>`<tr><td>${label(z)}</td><td>${pct(z.p)}</td><td>${z.successM.min??'—'}</td><td>${f(z.am)}</td><td>${z.successM.max??'—'}</td><td>${z.successK.min??'—'}</td><td>${f(z.ak)}</td><td>${z.successK.max??'—'}</td><td>${z.totalM.min??'—'}</td><td>${f(z.allM)}</td><td>${z.totalM.max??'—'}</td><td>${z.totalK.min??'—'}</td><td>${f(z.allK)}</td><td>${z.totalK.max??'—'}</td><td>${Number.isFinite(z.score)?f(z.score):'—'}</td><td>${z.p>=.8?'가능 (추정)':'미달'}</td></tr>`).join('')}</tbody></table></div><p class="muted">* 직접 가치 설정: 모듈 1개 = 락 키 ${ratio}개. 자동 평가: 모듈 사용량/보유 모듈 + 락 키 사용량/보유 락 키. 성공 1회당 종합비용은 전체 시도 평균 종합비용을 성공률로 나눈 참고 지표입니다. 80% 여부는 <b>현재 입력한 두 재화 예산을 동시에 적용</b>한 ${runs}회 표본의 성공 비율 기준이며, 80% 성공에 필요한 재화량을 계산한 것은 아닙니다. 실패 후 실제 장비 상태는 변하므로 독립 재시작 가정은 현실과 다를 수 있습니다. 최소·최대값은 이번 시뮬레이션 표본에서 관측된 소모량이며 실제 게임에서 가능한 절대 최솟값·최댓값을 의미하지 않습니다. 성공 사례가 0건이면 성공 최소·평균·최대는 —로 표시합니다. 같은 난수 시드를 전략별로 사용합니다. 확률 재분배·잠금 시 슬롯 출현 방식은 미검증입니다. 락 키는 매 변경마다 재사용(비용 재지급), 모듈 고정은 최초 1회 비용으로 계산합니다. 이미 잠긴 장비와 도중 잠금 전략 변경은 미지원입니다.</p>`;
 };
 })();
 </script>
