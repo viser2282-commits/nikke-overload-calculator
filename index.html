@@ -9,9 +9,90 @@
 #equipment .equip-row span{white-space:nowrap}
 @media(max-width:800px){#equipment.grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:420px){#equipment .equip-row{grid-template-columns:18px minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);gap:4px}#equipment .equip-row select{font-size:11px;padding:8px 2px}}
-</style></head><body><main><h1>니케 오버로드 모듈작 계산기</h1><div class="badge">베타 0.3.1 · 수치 등급 반영 · 확률 전이 일부 미검증 · 실제 최적해 보장 안 함</div><p class="muted">장비 4부위와 목표 옵션 개수를 입력하고, 잠금 전략별 재화 소모를 모의실험합니다. 파일을 브라우저에서 열면 작동합니다.</p>
+</style></head><body><main><h1>니케 오버로드 모듈작 계산기</h1><div class="badge">베타 0.3.2 · 수치 등급 반영 · 확률 전이 일부 미검증 · 실제 최적해 보장 안 함</div><p class="muted">장비 4부위와 목표 옵션 개수를 입력하고, 잠금 전략별 재화 소모를 모의실험합니다. 파일을 브라우저에서 열면 작동합니다.</p>
 <section><h2>① 캐릭터 및 보유 재화</h2><div class="row"><label>캐릭터 <input id="character" placeholder="직접 입력" style="width:160px"></label><label>모듈 <input id="modules" type="number" min="0" value="100"></label><label>락 키 <input id="keys" type="number" min="0" value="500"></label><label>시드 <input id="seed" type="number" value="2026"></label><label>시뮬레이션 횟수 <select id="runs"><option>200</option><option selected>1000</option><option>3000</option></select></label></div><p class="muted">추천 옵션 자동 업데이트는 후속 버전 예정. 현재는 목표 직접 입력.</p></section>
 <section><h2>② 장비 4부위</h2><div id="equipment" class="grid"></div></section>
 <section><h2>③ 전체 장비 목표 (옵션별 최소 개수)</h2><div id="targets" class="grid"></div><p class="muted">각 장비에서 같은 옵션의 중복은 불가능하다고 가정. 각 목표 옵션의 최소 수치 등급을 드롭다운에서 선택할 수 있습니다.</p></section>
 <section><h2>④ 게임 규칙 · 수정 가능한 설정</h2><div class="row"><label>1슬롯 출현률 <input id="p1" type="number" min="0" max="100" value="100">%</label><label>2슬롯 <input id="p2" type="number" min="0" max="100" value="50">%</label><label>3슬롯 <input id="p3" type="number" min="0" max="100" value="30">%</label></div><div class="row"><label>잠금 0개 변경 모듈 <input id="c0" type="number" min="0" value="1"></label><label>잠금 1개 변경 모듈 <input id="c1" type="number" min="0" value="1"></label><label>잠금 2개 변경 모듈 <input id="c2" type="number" min="0" value="3"></label></div><div class="row"><label>모듈 첫 고정 잠금 <input id="m1" type="number" min="0" value="2"></label><label>모듈 두번째 추가 <input id="m2" type="number" min="0" value="3"></label><label>락 키 첫 잠금 <input id="k1" type="number" min="0" value="20"></label><label>락 키 두번째 추가 <input id="k2" type="number" min="0" value="30"></label></div><div class="note">⚠️ 미검증 모델 가정: 슬롯별 등장 여부를 독립 추첨하고, 옵션 종류는 이미 선택된 종류를 제외한 나머지 확률을 비례 재정규화해 추첨합니다. 고정 잠금은 계속 유지, 락 키 잠금은 1회 변경 후 해제된다고 처리합니다. 잠금 상태의 슬롯 출현·확률 재분배 및 수치 재설정은 아직 분석에서 제외합니다. 실제 게임과 차이가 날 수 있습니다.</div><details><summary>옵션별 종류 가중치 (합계 100)</summary><div id="weights" class="grid"></div></details></section>
-<section><h2>⑤ 전략별 시뮬레이션</h2><div class="actions"><button id="calculate">계산 실행</button><button class="secondary" id="save">설정 저장</button><button class="secondary" id="load">저장 불러오기</button><button class="secondary" id="reset">초기화</button></div><p class="muted">전략: 잠금 없음 / 목표 옵션을 락 키로 보호 / 모듈 고정 보호 / 혼합 보호. 한 장비에서 목표에 기여하는 옵션을 최대 2개 보호하고 나머지를 재설정하는 휴리스틱입니다. 전역 MDP 최적해가 아닙니다.</p><div id="result"><p class="muted">계산 실행을 눌러주세요.</p></div></section><section><h2>검증 상태</h2><p class="muted">확인: 옵션 종류별 기본 확률(사용자 제공 화면), 슬롯별 확률, 잠금 비용, 효과 변경 비용, 락 키 자동 해제. 미확인: 잠금 상태의 옵션 추첨 상세, 옵션 수치 재설정의 분포, 신규 캐릭터 추천 옵션. 이 버전은 재화 비용 비교를 위한 시뮬레이션 프로토타입입니다.</p></section></main><script src="engine.js"></script><script src="app.js"></script></body></html>
+<section><h2>⑤ 전략별 시뮬레이션</h2><div class="actions"><button id="calculate">계산 실행</button><button class="secondary" id="save">설정 저장</button><button class="secondary" id="load">저장 불러오기</button><button class="secondary" id="reset">초기화</button></div><p class="muted">전략: 잠금 없음 / 목표 옵션을 락 키로 보호 / 모듈 고정 보호 / 혼합 보호. 한 장비에서 목표에 기여하는 옵션을 최대 2개 보호하고 나머지를 재설정하는 휴리스틱입니다. 전역 MDP 최적해가 아닙니다.</p><div id="result"><p class="muted">계산 실행을 눌러주세요.</p></div></section><section><h2>검증 상태</h2><p class="muted">확인: 옵션 종류별 기본 확률(사용자 제공 화면), 슬롯별 확률, 잠금 비용, 효과 변경 비용, 락 키 자동 해제. 미확인: 잠금 상태의 옵션 추첨 상세, 옵션 수치 재설정의 분포, 신규 캐릭터 추천 옵션. 이 버전은 재화 비용 비교를 위한 시뮬레이션 프로토타입입니다.</p></section></main><script>
+'use strict';
+/* 독립 계산 엔진. 검증되지 않은 전이는 명시적 가정으로만 구현. */
+window.NikkeEngine=(()=>{
+const names=['우월 코드 대미지','명중률','최대 장탄 수','공격력','차지 대미지','차지 속도','크리티컬 확률','크리티컬 대미지','방어력'];
+const weights=[10,12,12,10,12,12,12,10,10];
+function rng(seed){let a=(seed>>>0)||1;return ()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function pick(excluded,w,r){const list=w.map((v,i)=>({i,v:excluded.has(i)?0:v})).filter(x=>x.v>0);const total=list.reduce((a,x)=>a+x.v,0);if(!total)return -1;let p=r()*total;for(const x of list){p-=x.v;if(p<0)return x.i}return list.at(-1).i}
+function goalMetQualified(e,g,targets,minGrades){return targets.every((need,i)=>e.reduce((a,eq,j)=>a+eq.filter((x,k)=>x===i&&g[j][k]>=minGrades[i]).length,0)>=need)}
+function goalMet(e,targets){return targets.every((need,i)=>e.reduce((a,eq)=>a+eq.filter(x=>x===i).length,0)>=need)}
+function rollGrade(r){let p=r();for(let i=1;i<=15;i++){p-=i<=5?.12:i<=10?.07:.01;if(p<0)return i}return 15}
+function costFor(n,kind,c){const fixed=kind==='fixed'?n:kind==='mixed'?Math.min(n,1):0;const temporary=kind==='keys'?n:kind==='mixed'?Math.max(0,n-1):0;const setup=fixed===2?c.m1+c.m2:fixed===1?c.m1:0;const keyCost=temporary===2?c.k1+c.k2:temporary===1?(fixed?c.k2:c.k1):0;return {setup,keyCost,change:[c.c0,c.c1,c.c2][n]}}
+function simulate(input,kind,seed){const r=rng(seed),e=input.equipment.map(x=>x.slice()),g=input.grades.map(x=>x.slice());let modules=0,keys=0,steps=0;const fixed=new Set();const maxSteps=350;
+ const targetCount=()=>input.targets.map((_,i)=>e.reduce((a,eq,j)=>a+eq.filter((v,k)=>v===i&&g[j][k]>=input.minGrades[i]).length,0));
+ if(goalMetQualified(e,g,input.targets,input.minGrades))return {success:true,modules,keys,steps};
+ for(let turn=0;turn<maxSteps;turn++){
+  const counts=targetCount();let best=null;
+  for(let j=0;j<4;j++){
+   const eligible=e[j].map((v,k)=>({v,k,grade:g[j][k],needed:v>=0&&input.targets[v]>0&&g[j][k]>=input.minGrades[v]})).filter(x=>x.needed).sort((a,b)=>((counts[a.v]<=input.targets[a.v]?2:0)-(counts[b.v]<=input.targets[b.v]?2:0))||b.grade-a.grade);
+   const locks=kind==='none'?[]:eligible.slice(0,2).map(x=>x.k);
+   const fixedCount=kind==='fixed'?locks.length:kind==='mixed'?Math.min(1,locks.length):0;
+   const fixedIndices=locks.slice(0,fixedCount);const prior=locks.filter(k=>fixed.has(`${j}:${k}`));
+   // 이미 고정 잠금된 슬롯은 전략 종류와 무관하게 유지해야 함
+   const existing=e[j].map((_,k)=>k).filter(k=>input.locks?.[j]?.[k]==='fixed'||fixed.has(`${j}:${k}`));
+   const allLocks=[...new Set([...locks,...existing])];if(allLocks.length>2)continue;
+   const newFixed=fixedIndices.filter(k=>!existing.includes(k));
+   const fixedBefore=existing.length;const setupCost=newFixed.reduce((sum,_,i)=>sum+(fixedBefore+i===0?input.costs.m1:input.costs.m2),0);
+   const temporary=allLocks.filter(k=>!existing.includes(k));
+   const keyCost=kind==='keys'||kind==='mixed'?(temporary.length===2?input.costs.k1+input.costs.k2:temporary.length===1?(existing.length?input.costs.k2:input.costs.k1):0):0;
+   const lockFinal=kind==='none'?[...existing]:allLocks;
+   const changeCost=[input.costs.c0,input.costs.c1,input.costs.c2][lockFinal.length];
+   const modCost=setupCost+changeCost;
+   if(modules+modCost>input.budget.modules||keys+keyCost>input.budget.keys)continue;
+   const preserve=lockFinal.reduce((a,k)=>a+(e[j][k]>=0&&input.targets[e[j][k]]>0?2:0),0);
+   const useful=e[j].reduce((a,v,k)=>a+(v>=0&&input.targets[v]>0&&g[j][k]>=input.minGrades[v]?1:0),0);
+   const score=(3-useful)*2+preserve*.3-modCost*.07-keyCost*.003+r()*.3;
+   if(!best||score>best.score)best={j,lockFinal,newFixed,modCost,keyCost,score};
+  }
+  if(!best)break;
+  const {j,lockFinal,newFixed,modCost,keyCost}=best;modules+=modCost;keys+=keyCost;steps++;
+  newFixed.forEach(k=>fixed.add(`${j}:${k}`));
+  const used=new Set(lockFinal.map(k=>e[j][k]).filter(v=>v>=0));
+  for(let slot=0;slot<3;slot++){if(lockFinal.includes(slot))continue;e[j][slot]=-1;g[j][slot]=0;if(r()<input.slotProb[slot]){const v=pick(used,input.weights,r);e[j][slot]=v;if(v>=0){used.add(v);g[j][slot]=rollGrade(r)}}}
+  if(goalMetQualified(e,g,input.targets,input.minGrades))return {success:true,modules,keys,steps};
+ }
+ return {success:false,modules,keys,steps};
+}
+function summarize(input,kind){const n=input.runs;const samples=[];for(let i=0;i<n;i++)samples.push(simulate(input,kind,input.seed+i*9973+kind.length*71));const success=samples.filter(x=>x.success);const avg=k=>success.length?success.reduce((a,x)=>a+x[k],0)/success.length:null;const pct=success.length/n;const err=1.96*Math.sqrt(pct*(1-pct)/n);const sorted=success.map(x=>x.modules).sort((a,b)=>a-b);const quant=p=>sorted.length?sorted[Math.min(sorted.length-1,Math.ceil(p*sorted.length)-1)]:null;return {kind,success:success.length,total:n,p:pct,error:err,avgModules:avg('modules'),avgKeys:avg('keys'),medianModules:quant(.5),p90Modules:quant(.9)}}
+return {names,weights,rng,pick,goalMet,goalMetQualified,costFor,simulate,summarize};
+})();
+
+</script>
+<script>
+'use strict';
+(()=>{const E=window.NikkeEngine,$=id=>document.getElementById(id),parts=['머리','몸통','팔','다리'];// 게임 내 확률 정보 화면의 15단계 수치 (옵션 순서 = NikkeEngine.names)
+const gradeValues=[
+[9.54,10.94,12.34,13.75,15.15,16.55,17.95,19.35,20.75,22.15,23.56,24.96,26.36,27.76,29.16],
+[4.77,5.47,6.18,6.88,7.59,8.29,9.00,9.70,10.40,11.11,11.81,12.52,13.22,13.93,14.63],
+[27.84,31.95,36.06,40.17,44.28,48.39,52.50,56.60,60.71,64.82,68.93,73.04,77.15,81.26,85.37],
+[4.77,5.47,6.18,6.88,7.59,8.29,9.00,9.70,10.40,11.11,11.81,12.52,13.22,13.93,14.63],
+[4.77,5.47,6.18,6.88,7.59,8.29,9.00,9.70,10.40,11.11,11.81,12.52,13.22,13.93,14.63],
+[1.98,2.28,2.57,2.86,3.16,3.45,3.75,4.04,4.33,4.63,4.92,5.21,5.51,5.80,6.09],
+[2.30,2.64,2.98,3.32,3.66,4.00,4.35,4.69,5.03,5.37,5.71,6.05,6.39,6.73,7.07],
+[6.64,7.62,8.60,9.58,10.56,11.54,12.52,13.50,14.48,15.46,16.44,17.42,18.40,19.38,20.36],
+[4.77,5.47,6.18,6.88,7.59,8.29,9.00,9.70,10.40,11.11,11.81,12.52,13.22,13.93,14.63]
+];
+function updateGrade(j,k,old=''){const opt=Number($(`o${j}_${k}`).value),el=$(`v${j}_${k}`);el.innerHTML='<option value="">수치 선택</option>'+(gradeValues[opt]||[]).map((v,i)=>`<option value="${v.toFixed(2)}">${i+1}단계 · ${v.toFixed(2)}%</option>`).join('');if(old!==''&&[...el.options].some(o=>o.value===String(old)))el.value=String(old);el.disabled=opt<0}
+const optionHtml=(selected=-1)=>`<option value="-1">없음</option>${E.names.map((n,i)=>`<option value="${i}" ${i===selected?'selected':''}>${n}</option>`).join('')}`;
+$('equipment').innerHTML=parts.map((p,j)=>`<div class="card"><b>${p}</b>${[0,1,2].map(k=>`<div class="equip-row"><span>${k+1}</span><select id="o${j}_${k}">${optionHtml()}</select><select id="v${j}_${k}" title="옵션 수치 (15단계 중 선택, 현 버전 확률 계산 미반영)"><option value="">수치 선택</option></select><select id="l${j}_${k}" title="현재 잠금 상태"><option value="none">미잠금</option><option value="fixed">모듈</option><option value="keys">락 키</option></select></div>`).join('')}</div>`).join('');
+parts.forEach((_,j)=>[0,1,2].forEach(k=>{updateGrade(j,k);$(`o${j}_${k}`).addEventListener('change',()=>updateGrade(j,k))}));
+$('targets').innerHTML=E.names.map((n,i)=>`<div class="target"><label for="t${i}">${n}</label><input type="number" id="t${i}" min="0" max="4" value="0"></div>`).join('');
+$('targets').querySelectorAll('.target').forEach((el,i)=>{const sel=document.createElement('select');sel.id=`g${i}`;sel.title='이 옵션의 최소 수치 등급';sel.innerHTML='<option value="1">1단계 이상</option>'+Array.from({length:14},(_,k)=>`<option value="${k+2}">${k+2}단계 이상</option>`).join('');el.appendChild(sel)});
+$('weights').innerHTML=E.names.map((n,i)=>`<label>${n} <input id="w${i}" type="number" min="0" step="0.1" value="${E.weights[i]}"></label>`).join('');
+function number(id){return Number($(id).value)}function read(){return {grades:parts.map((_,j)=>[0,1,2].map(k=>{const el=$(`v${j}_${k}`);return el.value?el.selectedIndex:0})),locks:parts.map((_,j)=>[0,1,2].map(k=>$(`l${j}_${k}`).value)),minGrades:E.names.map((_,i)=>number(`g${i}`)),equipment:parts.map((_,j)=>[0,1,2].map(k=>number(`o${j}_${k}`))),targets:E.names.map((_,i)=>number(`t${i}`)),weights:E.names.map((_,i)=>number(`w${i}`)),slotProb:[number('p1'),number('p2'),number('p3')].map(x=>x/100),costs:{c0:number('c0'),c1:number('c1'),c2:number('c2'),m1:number('m1'),m2:number('m2'),k1:number('k1'),k2:number('k2')},budget:{modules:number('modules'),keys:number('keys')},runs:number('runs'),seed:number('seed')}}
+function validate(x){if(x.minGrades.some(v=>v<1||v>15))return '목표 등급은 1~15 사이여야 합니다.';if(x.targets.every(v=>v===0))return '목표 옵션 개수를 하나 이상 입력해 주세요.';if(x.targets.some(v=>v<0||v>4||!Number.isInteger(v)))return '옵션별 목표 개수는 0~4 정수로 입력해 주세요.';if(x.targets.reduce((a,b)=>a+b,0)>12)return '목표 옵션 총합은 12개를 넘을 수 없습니다.';if(x.weights.some(v=>v<0)||x.weights.reduce((a,b)=>a+b,0)<=0)return '옵션 확률 가중치를 확인해 주세요.';if(x.slotProb.some(v=>v<0||v>1))return '슬롯 확률은 0~100%여야 합니다.';if(Object.values(x.costs).some(v=>v<0)||Object.values(x.budget).some(v=>v<0))return '재화는 0 이상이어야 합니다.';for(const eq of x.equipment){const existing=eq.filter(v=>v>=0);if(new Set(existing).size!==existing.length)return '한 장비 안에서 동일 옵션을 중복 입력할 수 없습니다.'}return ''}
+const fmt=v=>v===null?'—':v.toFixed(1),pct=v=>(v*100).toFixed(1)+'%';
+$('calculate').onclick=()=>{const x=read(),error=validate(x);if(error){$('result').innerHTML=`<p class="warning">${error}</p>`;return}const started=performance.now();const kinds=['none','keys','fixed','mixed'];const label={none:'잠금 없음',keys:'락 키 보호',fixed:'모듈 고정 보호',mixed:'모듈+락 키 혼합'};const results=kinds.map(k=>E.summarize(x,k));results.sort((a,b)=>b.p-a.p||((a.avgModules??1e9)-(b.avgModules??1e9)));const met=E.goalMetQualified(x.equipment,x.grades,x.targets,x.minGrades);$('result').innerHTML=`<div class="row"><div class="card"><div class="muted">현재 목표 달성</div><div class="stat">${met?'달성':'미달성'}</div></div><div class="card"><div class="muted">실험 규모</div><div class="stat">${x.runs.toLocaleString()}회 × 4</div></div></div><div class="tablewrap"><table><thead><tr><th>전략</th><th>예산 내 성공률</th><th>95% 오차폭*</th><th>성공 사례 평균 모듈</th><th>성공 사례 평균 락 키</th><th>성공 사례 모듈 중앙값</th></tr></thead><tbody>${results.map(z=>`<tr><td>${label[z.kind]}</td><td><strong class="good">${pct(z.p)}</strong></td><td>±${pct(z.error)}</td><td>${fmt(z.avgModules)}</td><td>${fmt(z.avgKeys)}</td><td>${z.medianModules??'—'}</td></tr>`).join('')}</tbody></table></div><p class="note">현재 수치 등급과 목표 최소 등급을 반영합니다. 단, 실제 게임의 잠금 상태 전이 및 확률 재분배는 미검증이며, 최적해가 아닌 비교용 휴리스틱입니다.<br>*오차폭은 독립 시행을 가정한 근사치이며 시뮬레이션 모델 자체의 오류를 포함하지 않습니다. 평균 비용은 <b>성공한 실험만의 평균</b>으로, 목표 달성까지의 무제한 기대비용이 아닙니다. 전략별 순위는 보유 예산 내 성공률 기준의 참고 비교일 뿐 최적성 보장은 없습니다. ${Math.round(performance.now()-started)}ms</p>`};
+function snapshot(){const ids=['character','modules','keys','seed','runs','p1','p2','p3','c0','c1','c2','m1','m2','k1','k2',...E.names.flatMap((_,i)=>[`t${i}`,`g${i}`,`w${i}`]),...parts.flatMap((_,j)=>[0,1,2].flatMap(k=>[`o${j}_${k}`,`v${j}_${k}`,`l${j}_${k}`]))];return Object.fromEntries(ids.map(id=>[id,$(id).value]))}
+$('save').onclick=()=>{localStorage.setItem('nikke-overload-beta-v1',JSON.stringify(snapshot()));alert('이 브라우저에 저장했습니다.')};$('load').onclick=()=>{try{const data=JSON.parse(localStorage.getItem('nikke-overload-beta-v1')||'null');if(!data){alert('저장된 설정이 없습니다.');return}for(const [id,value] of Object.entries(data))if($(id)&&!/^v[0-3]_[0-2]$/.test(id))$(id).value=value;parts.forEach((_,j)=>[0,1,2].forEach(k=>updateGrade(j,k,data[`v${j}_${k}`]??'')));alert('불러왔습니다.')}catch(e){alert('저장 데이터를 읽지 못했습니다.')}};$('reset').onclick=()=>{if(confirm('입력값을 초기화할까요?'))location.reload()};
+})();
+
+</script></body></html>
